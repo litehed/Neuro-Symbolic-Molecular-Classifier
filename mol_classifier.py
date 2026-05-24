@@ -75,7 +75,10 @@ def classify(smiles: str) -> dict:
             r.conclusion for r in fired if final_memory.get(r.conclusion, False)
         )
     )
-    primary = max(fired, key=lambda r: r.priority)
+    primary = max(
+        (r for r in fired if final_memory.get(r.conclusion, False)),
+        key=lambda r: r.priority,
+    )
 
     return {
         "molecule": smiles,
