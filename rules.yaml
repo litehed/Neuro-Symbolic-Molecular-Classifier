@@ -1,0 +1,215 @@
+# Rule Params:
+# name        : rule name
+# conclusion  : fact asserted into working memory when the rule fires
+# priority    : higher priority rules fire first in conflict resolution
+# explanation : human-readable justification shown in the trace
+# when        : list of conditions, all must hold (AND)
+#                   - requires: key must be True in working memory
+#                   - forbids:  key must be False/absent
+# retracts    : conclusions to rescind when this rule fires (optional)
+# enabled     : set false to suppress without deleting (default true) (optional)
+
+
+- name: carboxylic_acid
+  conclusion: carboxylic_acid
+  priority: 100
+  explanation: "Carboxyl group (-COOH) detected -> carboxylic acid"
+  when:
+    requires: [has_COOH]
+
+- name: amide
+  conclusion: amide
+  priority: 95
+  explanation: "Amide linkage C(=O)-N detected"
+  when:
+    requires: [has_amide]
+
+- name: ester
+  conclusion: ester
+  priority: 95
+  explanation: "Ester linkage C(=O)-O-C detected (no free -COOH)"
+  when:
+    requires: [has_ester]
+    forbids: [has_COOH]
+
+- name: aldehyde
+  conclusion: aldehyde
+  priority: 90
+  explanation: "Aldehyde carbonyl (-CHO) detected"
+  when:
+    requires: [has_aldehyde]
+
+- name: ketone
+  conclusion: ketone
+  priority: 90
+  explanation: "Carbonyl flanked by two carbons, no competing carbonyl class -> ketone"
+  when:
+    requires: [has_ketone]
+    forbids: [has_COOH, has_ester, has_amide, has_aldehyde]
+
+- name: alcohol
+  conclusion: alcohol
+  priority: 80
+  explanation: "Hydroxyl (-OH) on carbon detected"
+  when:
+    requires: [has_OH]
+    forbids: [has_COOH]
+
+- name: amine
+  conclusion: amine
+  priority: 80
+  explanation: "Primary amino group (-NH2) detected"
+  when:
+    requires: [has_NH2]
+    forbids: [has_amide]
+
+- name: thiol
+  conclusion: thiol
+  priority: 70
+  explanation: "Sulfhydryl (-SH) group detected"
+  when:
+    requires: [has_thiol]
+
+- name: aromatic
+  conclusion: aromatic
+  priority: 65
+  explanation: "Six-membered aromatic ring (benzene-like) detected"
+  when:
+    requires: [has_aromatic_ring]
+
+- name: cyclic_non_aromatic
+  conclusion: cyclic_non_aromatic
+  priority: 60
+  explanation: "Ring present, no aromatic ring -> non-aromatic cyclic compound"
+  when:
+    requires: [has_ring]
+    forbids: [aromatic]
+
+- name: alkane
+  conclusion: alkane
+  priority: 20
+  explanation: "sp3 carbons only, no functional groups detected -> alkane"
+  when:
+    requires: [has_sp3_C]
+    forbids:
+      [
+        has_COOH,
+        has_OH,
+        has_NH2,
+        has_thiol,
+        has_aromatic_ring,
+        has_aldehyde,
+        has_ketone,
+        has_ester,
+        has_amide,
+      ]
+
+- name: acyl_halide
+  conclusion: acyl_halide
+  priority: 97
+  explanation: "Carbonyl bonded to halogen -> acyl halide"
+  when:
+    requires: [has_acyl_halide]
+
+- name: anhydride
+  conclusion: anhydride
+  priority: 96
+  explanation: "Two carbonyls bridged by an oxygen -> anhydride"
+  when:
+    requires: [has_anhydride]
+    forbids: [has_COOH]
+
+- name: imine
+  conclusion: imine
+  priority: 88
+  explanation: "C=N double bond detected -> imine"
+  when:
+    requires: [has_imine]
+    forbids: [has_amide]
+
+- name: sulfide
+  conclusion: sulfide
+  priority: 68
+  explanation: "Thioether (C-S-C) detected"
+  when:
+    requires: [has_sulfide]
+    forbids: [has_thiol]
+
+- name: disulfide
+  conclusion: disulfide
+  priority: 68
+  explanation: "Disulfide bridge (C-S-S-C) detected"
+  when:
+    requires: [has_disulfide]
+
+
+
+- name: phenol
+  conclusion: phenol
+  priority: 85
+  explanation: "OH on aromatic carbon -> phenol, retracting incorrect alcohol conclusion"
+  when:
+    requires: [has_phenol, alcohol]
+  retracts: [alcohol]
+
+- name: enol
+  conclusion: enol
+  priority: 85
+  explanation: "OH on sp2 carbon -> enol, retracting incorrect alcohol conclusion"
+  when:
+    requires: [has_enol, alcohol]
+  retracts: [alcohol]
+
+
+- name: polar_molecule
+  conclusion: polar_molecule
+  priority: 50
+  explanation: "Polar functional group present -> polar molecule"
+  when:
+    requires_any:
+      [
+        alcohol,
+        amine,
+        carboxylic_acid,
+        thiol,
+        amide,
+        aldehyde,
+        ketone,
+        ester,
+        phenol,
+        enol,
+      ]
+
+- name: carbonyl_compound
+  conclusion: carbonyl_compound
+  priority: 45
+  explanation: "At least one carbonyl class concluded -> carbonyl compound"
+  when:
+    requires_any: [carboxylic_acid, ester, amide, aldehyde, ketone]
+
+- name: heteroatom_compound
+  conclusion: heteroatom_compound
+  priority: 45
+  explanation: "Nitrogen or sulfur functional group present -> heteroatom compound"
+  when:
+    requires_any: [amine, thiol]
+
+- name: multifunctional
+  conclusion: multifunctional
+  priority: 40
+  explanation: "Two or more functional group classes detected -> multifunctional molecule"
+  when:
+    requires_two_or_more:
+      [
+        alcohol,
+        amine,
+        carboxylic_acid,
+        thiol,
+        amide,
+        aldehyde,
+        ketone,
+        ester,
+        aromatic,
+        phenol,
+        enol,
+      ]
