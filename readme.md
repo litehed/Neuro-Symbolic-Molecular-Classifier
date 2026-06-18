@@ -1,6 +1,6 @@
-# Neuro-Symbolic Molecular Classifier 
+# Symbolic Molecular Classifier 
 
-This is a symbolic classifier that takes SMILES strings representing organic chemicals as an input and classifies them by functional groups. I plan to extend this and use it in conjunctionn with a neural network to make this a fully Neuro-Symbolic classification system in the near future.
+This is a symbolic classifier that takes SMILES strings representing organic chemicals as an input and classifies them by functional groups. I plan to extend this and use it in conjunction with a neural network to make this a fully Neuro-Symbolic classification system in the near future.
 
 ## How it works
 1. Facts are extracted from a SMILES string using [RDKit](https://github.com/rdkit). Some examples include `has_COOH` and `has_aromatic_ring`.
